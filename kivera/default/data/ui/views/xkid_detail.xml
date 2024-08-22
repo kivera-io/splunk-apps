@@ -1,0 +1,549 @@
+<form version="1.1" theme="dark">
+  <label>xKid Lookup</label>
+  <description>Note: All panels on this dashboard (except the last one) show the 'request' event only. The 'connect' and 'response' events are shown in raw data panel at the bottom of the dashboard.</description>
+  <search id="xkid_detail">
+    <query>
+      `kivera_proxy_search`
+| search xkid=$xkid$ 
+| search $level$
+| search msg="request"
+| table *
+    </query>
+    <earliest>$field1.earliest$</earliest>
+    <latest>$field1.latest$</latest>
+  </search>
+  <fieldset submitButton="false">
+    <input type="time" token="field1">
+      <label></label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="text" token="xkid">
+      <label>xkid</label>
+    </input>
+    <input type="multiselect" token="level">
+      <label>Log level</label>
+      <choice value="&quot;*&quot;">All</choice>
+      <fieldForLabel>level</fieldForLabel>
+      <fieldForValue>level</fieldForValue>
+      <search base="xkid_detail">
+        <query>
+| fillnull value=""
+| stats count by level</query>
+      </search>
+      <valuePrefix>level=</valuePrefix>
+      <delimiter> OR </delimiter>
+      <default>"""*"""</default>
+      <initialValue>"*"</initialValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Event details</title>
+      <html depends="$alwaysHideCSSStyle$">
+        <style>
+        #table1 table {
+          table-layout: fixed;
+          width: 100%;
+        }
+        
+        #table1 table td, 
+        #table1 table th {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        #table1 table th:nth-child(1),
+        #table1 table td:nth-child(1) {
+          width: 30%;
+        }
+        
+        #table1 table th:nth-child(2),
+        #table1 table td:nth-child(2) {
+          width: 70%;
+        }          
+        </style>
+       </html>
+      <table id="table1">
+        <search base="xkid_detail">
+          <query>| rename 
+    data.Valid as Valid
+    data.Profiles{}.ProfileName as ProfileName
+    data.ProviderMetadata.AccessKeyId as AccessKeyId
+    data.ProviderMetadata.Account as Account
+    data.Provider as Provider
+    data.Service as Service
+    data.Action as Action
+    data.AppName as AppName
+    data.ProxyName as ProxyName
+    data.Region as Region
+    data.Headers.X-Kivera-Source{} as Kivera_Source 
+    data.LearningMode as LearningMode
+    data.ProxyMode as ProxyMode
+| fields - x _raw _bkt _cd _eventtype_color _mkv_child _si _sourcetype _indextime
+| eval Date=strftime(_time,"%Y-%m-%d %H:%M:%S")
+| table Date xkid Provider Service Action ProxyMode LearningMode Valid
+| eval Header="Value" 
+| transpose column_name="Key" header_field=Header</query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <format type="color" field="Key">
+          <colorPalette type="list">[#000000]</colorPalette>
+        </format>
+        <format type="color" field="Value">
+          <colorPalette type="map">{"false":#DC4E41,"Enabled":#53A051,"true":#53A051,"Disabled":#DC4E41}</colorPalette>
+        </format>
+      </table>
+    </panel>
+    <panel>
+      <title>Provider metadata</title>
+      <html depends="$alwaysHideCSSStyle$">
+        <style>
+        #table2 table {
+          table-layout: fixed;
+          width: 100%;
+        }
+        
+        #table2 table td, 
+        #table2 table th {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        #table2 table th:nth-child(1),
+        #table2 table td:nth-child(1) {
+          width: 30%;
+        }
+        
+        #table2 table th:nth-child(2),
+        #table2 table td:nth-child(2) {
+          width: 70%;
+        }          
+        </style>
+       </html>
+      <table id="table2">
+        <search base="xkid_detail">
+          <query>| table *
+| search msg="request"
+| fields - x _raw _time _bkt _cd _eventtype_color _mkv_child _si _sourcetype _indextime
+| table data.ProviderMetadata.*
+| eval Header="Value"
+| rename data.ProviderMetadata.* as *
+| transpose column_name="Key" header_field=Header
+| where isnotnull(Value)
+| sort Key</query>
+        </search>
+        <option name="count">50</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">false</option>
+        <format type="color" field="Key">
+          <colorPalette type="list">[#000000]</colorPalette>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="spacer_panel5">
+      <html>
+        <div>            
+          <style>
+          #spacer_panel5 .dashboard-panel  {
+              background: #181d21 !important; 
+          }
+         </style>
+        </div>               
+          </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>HTTP details</title>
+      <html depends="$alwaysHideCSSStyle$">
+        <style>
+        #table9 table {
+          table-layout: fixed;
+          width: 100%;
+        }
+        
+        #table9 table td, 
+        #table1 table th {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        #table9 table th:nth-child(1),
+        #table9 table td:nth-child(1) {
+          width: 14.5%;
+        }
+        
+        #table9 table th:nth-child(2),
+        #table9 table td:nth-child(2) {
+          width: 85.5%;
+        }          
+        </style>
+       </html>
+      <table id="table9">
+        <search base="xkid_detail">
+          <query>| fillnull value="" 
+| rename 
+    data.Method as Method
+    data.Path as Path
+    data.Host as Host
+    data.Proto as Proto
+    data.RemoteAddr as RemoteAddr
+| table Host Method Path Proto RemoteAddr
+| eval Header="Value" 
+| transpose column_name="Key" header_field=Header</query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <format type="color" field="Key">
+          <colorPalette type="list">[#000000]</colorPalette>
+        </format>
+        <format type="color" field="Value">
+          <colorPalette type="map">{"false":#DC4E41,"Enabled":#53A051,"true":#53A051,"Disabled":#DC4E41}</colorPalette>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="spacer_panel1">
+      <html>
+        <div>            
+          <style>
+          #spacer_panel1 .dashboard-panel  {
+              background: #181d21 !important; 
+          }
+         </style>
+        </div>               
+          </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Headers</title>
+      <html depends="$alwaysHideCSSStyle$">
+        <style>
+        #table3 table {
+          table-layout: fixed;
+          width: 100%;
+        }
+        
+        #table3 table td, 
+        #table3 table th {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        #table3 table th:nth-child(1),
+        #table3 table td:nth-child(1) {
+          width: 30%;
+        }
+        
+        #table3 table th:nth-child(2),
+        #table3 table td:nth-child(2) {
+          width: 70%;
+        }         
+        #table3 .panel-body {
+        padding-bottom: 20px !important;
+        }                
+        </style>
+       </html>
+      <table id="table3">
+        <search>
+          <query>`kivera_proxy_search`
+| search xkid=$xkid$
+| search msg="request"
+| search $level$
+| spath path=data.Headers output=x
+| mvexpand x
+| fields x
+| spath input=x
+| fillnull value="None"
+| fields - x _raw _time _bkt _cd _eventtype_color _mkv_child _si _sourcetype _indextime _serial _subsecond
+| table *
+| eval Header="Value"
+| transpose column_name="Key" header_field=Header
+| sort Key</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="count">50</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Key">
+          <colorPalette type="list">[#000000]</colorPalette>
+        </format>
+      </table>
+    </panel>
+    <panel>
+      <title>Event Body</title>
+      <html depends="$alwaysHideCSSStyle$">
+        <style>
+        #table4 table {
+          table-layout: fixed;
+          width: 100%;
+        }
+        
+        #table4 table td, 
+        #table4 table th {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        
+        #table4 table th:nth-child(1),
+        #table4 table td:nth-child(1) {
+          width: 30%;
+        }
+        
+        #table4 table th:nth-child(2),
+        #table4 table td:nth-child(2) {
+          width: 70%;
+        }         
+        #table4 .panel-body {
+        padding-bottom: 20px !important;
+        }                
+        </style>
+       </html>
+      <table id="table4">
+        <search>
+          <query>`kivera_proxy_search`
+| search xkid=$xkid$ 
+| search $level$
+| search msg="request"
+| spath path=data.Body output=x 
+| mvexpand x 
+| fields x
+| spath input=x 
+| fillnull value="None"
+| fields - x _raw _time _bkt _cd _eventtype_color _mkv_child _si _sourcetype _indextime _subsecond
+| table *
+| eval Header="Value"
+| transpose column_name="Key" header_field=Header
+| sort Key</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="count">50</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">false</option>
+        <format type="color" field="Key">
+          <colorPalette type="list">[#000000]</colorPalette>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="spacer_panel2">
+      <html>
+        <div>            
+          <style>
+          #spacer_panel2 .dashboard-panel  {
+              background: #181d21 !important; 
+          }
+         </style>
+        </div>               
+          </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Identities</title>
+      <table id="table5">
+        <search>
+          <query>`kivera_proxy_search` 
+| search xkid=$xkid$ 
+| search $level$ 
+| search msg="request"
+| spath path=data.Identities{} output=x 
+| mvexpand x 
+| fields x 
+| spath input=x 
+| stats
+    values(IdentityName) as IdentityName
+    values(IdentityIdentifier) as IdentityIdentifier
+    by IdentityId</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="count">50</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">false</option>
+        <format type="color" field="Key">
+          <colorPalette type="list">[#000000]</colorPalette>
+        </format>
+      </table>
+    </panel>
+    <panel>
+      <title>Profiles</title>
+      <table id="table6">
+        <search>
+          <query>`kivera_proxy_search` 
+| search xkid=$xkid$ 
+| search $level$ 
+| search msg="request"
+| rename data.Profiles{}.ProfileId as ProfileId
+| stats
+    values(data.Profiles{}.ProfileName) as ProfileName
+    values(data.Identities{}.IdentityName) as Identities
+    by ProfileId</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="count">50</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">false</option>
+        <format type="color" field="Key">
+          <colorPalette type="list">[#000000]</colorPalette>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="spacer_panel3">
+      <html>
+        <div>            
+          <style>
+          #spacer_panel3 .dashboard-panel  {
+              background: #181d21 !important; 
+          }
+         </style>
+        </div>               
+          </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Rules</title>
+      <table>
+        <search>
+          <query>`kivera_proxy_search`
+| search xkid=$xkid$ 
+| search $level$
+| search msg="request"
+| search level=info 
+| spath path=rules{} output=rules 
+| mvexpand rules 
+| spath input=rules 
+| rename RuleProcessResult as RuleResult 
+| rename RuleSteps{} as RuleSteps 
+| rename data.Profiles{}.ProfileName as ProfileName
+| rename data.Identities{}.IdentityName as IdentityName
+| stats
+    values(RuleSteps) as RuleSteps
+    values(RuleDescription) as RuleDescription
+    values(RuleResult) as RuleResult
+    values(ProfileName) as ProfileName
+    values(IdentityName) as IdentityName
+    by RuleId
+| table RuleId RuleDescription RuleSteps RuleResult ProfileName IdentityName
+| sort RuleId</query>
+          <earliest>$earliest$</earliest>
+          <latest>$latest$</latest>
+        </search>
+        <option name="count">50</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">false</option>
+        <format type="color" field="RuleResult">
+          <colorPalette type="map">{"BLOCK":#DC4E41,"ALLOW":#53A051}</colorPalette>
+        </format>
+        <format type="color" field="PolicyResult">
+          <colorPalette type="map">{"BLOCK":#DC4E41,"ALLOW":#53A051}</colorPalette>
+        </format>
+        <format type="color" field="RuleId">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel id="spacer_panel4">
+      <html>
+        <div>            
+          <style>
+          #spacer_panel4 .dashboard-panel  {
+              background: #181d21 !important; 
+          }
+         </style>
+        </div>               
+          </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Raw events (connect, request, response events)</title>
+      <html depends="$alwaysHideCSSStyle$">
+        <style>
+          #table7
+          #table7 th,
+          #table7 td:nth-child(0) {
+            width: 3% !important;
+            overflow: hidden;
+          }         
+          #table7 th,
+          #table7 td:nth-child(1) {
+            width: 3% !important;
+            overflow: hidden;
+          }
+          #table7 td{
+            white-space:pre-line;
+          }
+        </style>
+       </html>
+      <table id="table7">
+        <search>
+          <query>`kivera_proxy_search`
+| search xkid=$xkid$ 
+| search $level$
+| table timestamp msg _raw
+| sort - timestamp</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <format type="color" field="msg">
+          <colorPalette type="map">{"response":#115BAD,"request":#65778A,"allow_cloud_traffic":#3C444D,"generate_cert":#0099E0,"initial_request":#602CA1}</colorPalette>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>

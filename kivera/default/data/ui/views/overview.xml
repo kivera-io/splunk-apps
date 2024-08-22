@@ -1,0 +1,263 @@
+<form version="1.1" theme="dark">
+  <label>Dashboard</label>
+  <fieldset submitButton="false">
+    <input type="time" token="field1">
+      <label></label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="multiselect" token="proxyname">
+      <label>Proxy</label>
+      <choice value="%">All</choice>
+      <fieldForLabel>ProxyName</fieldForLabel>
+      <fieldForValue>ProxyName</fieldForValue>
+      <search>
+        <query>`kivera_proxy_search`
+| rename data.Valid as Valid
+| rename data.LearningMode as LearningMode
+| eval Valid=case(Valid=="true" AND ( LearningMode="true" OR LearningMode="false"), "true", Valid=="false" AND LearningMode="true", "true (learning)", Valid=="false", "false", 1=1, "unknown")  
+| rename data.ProxyName AS ProxyName
+| stats count by ProxyName</query>
+        <earliest>$field1.earliest$</earliest>
+        <latest>$field1.latest$</latest>
+      </search>
+      <valuePrefix>like('data.ProxyName',"</valuePrefix>
+      <delimiter> OR </delimiter>
+      <initialValue>%</initialValue>
+      <valueSuffix>")</valueSuffix>
+      <default>%</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <map>
+        <search>
+          <query>`kivera_proxy_search`
+| lookup cloud_provider_regions.csv provider as data.Provider region as data.ProviderMetadata.Region
+| where $proxyname$
+| geostats latfield=latitude longfield=longitude count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="mapping.choroplethLayer.colorBins">3</option>
+        <option name="mapping.choroplethLayer.maximumColor">0x118832</option>
+        <option name="mapping.type">marker</option>
+        <option name="refresh.display">progressbar</option>
+      </map>
+    </panel>
+    <panel>
+      <title>Requests by Provider:Service</title>
+      <chart>
+        <search>
+          <query>`kivera_proxy_search`
+| where $proxyname$
+| rename data.Provider as Provider
+| rename data.Service as Service
+| eval provider_service=Provider.":".Service
+| stats count by provider_service
+| rename provider_service as Service
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.axisY.scale">log</option>
+        <option name="charting.chart">pie</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.005</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="height">398</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Proxy - Total Requests</title>
+      <single>
+        <search>
+          <query>`kivera_proxy_search` 
+| where $proxyname$ 
+| search "data.Headers.X-Kivera-Source{}"=Proxy 
+| stats count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <link target="_blank">/app/kivera/proxy_detail?form.field1.earliest=$earliest$&amp;form.field1.latest=$latest$&amp;form.service=$row.data.Service$&amp;form.action=$row.data.Action$</link>
+        </drilldown>
+      </single>
+    </panel>
+    <panel>
+      <title>Proxy - Allowed Requests</title>
+      <single>
+        <search>
+          <query>`kivera_proxy_search` 
+| where $proxyname$
+
+| search msg="request" 
+| fillnull value="unknown" ListedAccountDescription 
+| where 'data.Valid'=="true" AND 'data.LearningMode'!="true" 
+| stats count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x118832","0x118832"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Proxy - Learning Mode Requests</title>
+      <single>
+        <search>
+          <query>`kivera_proxy_search`
+| where $proxyname$
+| where 'data.LearningMode'="true"
+| stats count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0xcba700","0xcba700"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Proxy - Blocked Requests</title>
+      <single>
+        <search>
+          <query>`kivera_proxy_search`
+| where $proxyname$
+| fillnull value=""
+| where 'data.Valid'=="false" AND 'data.LearningMode'!="true"
+| stats count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0xd41f1f","0xd41f1f"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Proxy - Total Requests</title>
+      <chart>
+        <title>Linear scale</title>
+        <search>
+          <query>`kivera_proxy_search`
+| where $proxyname$
+| search msg="request"
+| timechart count as "Proxy requests"</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.chart">area</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">368</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Proxy - Requests by proxy action</title>
+      <chart>
+        <title>Logarithmic scale</title>
+        <search>
+          <query>`kivera_proxy_search`
+| where $proxyname$
+| search msg="request"
+| eval proxy_action=case('data.Valid'=="true" AND 'data.LearningMode'!="true" , "Allowed", 'data.LearningMode'="true", "Learning mode", 'data.Valid'=="false" AND 'data.LearningMode'!="true", "Blocked", 1=1, "unknown") 
+| timechart count by proxy_action</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.axisY.scale">log</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">364</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Services</title>
+      <table>
+        <search>
+          <query>`kivera_proxy_search`
+| where $proxyname$
+| stats count by data.Service data.Provider
+| rename data.* as *
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">progressbar</option>
+        <format type="color" field="count">
+          <colorPalette type="minMidMax" maxColor="#006D9C" minColor="#3C444D"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+        <drilldown>
+          <link target="_blank">/app/kivera/proxy_detail?form.field1.earliest=$earliest$&amp;form.field1.latest=$latest$&amp;form.service=$row.Service$&amp;form.provider=$row.Provider$</link>
+        </drilldown>
+      </table>
+    </panel>
+    <panel>
+      <title>Actions by service</title>
+      <table>
+        <search>
+          <query>`kivera_proxy_search`
+| where $proxyname$
+| stats count by data.Provider data.Action data.Service
+| rename  data.* as *
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">cell</option>
+        <option name="refresh.display">progressbar</option>
+        <format type="color" field="count">
+          <colorPalette type="minMidMax" maxColor="#006D9C" minColor="#3C444D"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+        <drilldown>
+          <link target="_blank">/app/kivera/proxy_detail?form.field1.earliest=$earliest$&amp;form.field1.latest=$latest$&amp;form.service=$row.Service$&amp;form.action=$row.Action$&amp;form.provider=$row.Provider$</link>
+        </drilldown>
+      </table>
+    </panel>
+    <panel>
+      <title>Remote address count</title>
+      <table>
+        <search>
+          <query>`kivera_proxy_search`
+| where $proxyname$
+| stats count by data.RemoteAddr
+| rename data.* as *
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <format type="color" field="count">
+          <colorPalette type="minMidMax" maxColor="#006D9C" minColor="#3C444D"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>

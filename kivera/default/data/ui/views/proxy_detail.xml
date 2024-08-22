@@ -1,0 +1,415 @@
+<form version="1.1" theme="dark">
+  <label>Monitoring</label>
+  <fieldset submitButton="false">
+    <input type="time" token="field1">
+      <label></label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="multiselect" token="proxyname">
+      <label>Proxy</label>
+      <choice value="%">All</choice>
+      <fieldForLabel>ProxyName</fieldForLabel>
+      <fieldForValue>ProxyName</fieldForValue>
+      <search>
+        <query>`kivera_proxy_search`
+| where $action$ 
+| where $provider$
+| where $service$
+| rename data.Valid as Valid
+| rename data.LearningMode as LearningMode
+| eval Valid=case(Valid=="true" AND ( LearningMode="true" OR LearningMode="false"), "true", Valid=="false" AND LearningMode="true", "true (learning)", Valid=="false", "false", 1=1, "unknown")  
+| where $valid$
+| rename data.ProxyName AS ProxyName
+| stats count by ProxyName</query>
+        <earliest>$field1.earliest$</earliest>
+        <latest>$field1.latest$</latest>
+      </search>
+      <valuePrefix>like('data.ProxyName',"</valuePrefix>
+      <delimiter> OR </delimiter>
+      <initialValue>%</initialValue>
+      <valueSuffix>")</valueSuffix>
+      <default>%</default>
+    </input>
+    <input type="multiselect" token="valid">
+      <label>Valid</label>
+      <choice value="%">All</choice>
+      <fieldForLabel>Valid</fieldForLabel>
+      <fieldForValue>Valid</fieldForValue>
+      <search>
+        <query>`kivera_proxy_search`
+| where $action$ 
+| where $provider$
+| where $service$
+| where $proxyname$
+| rename data.Valid as Valid
+| rename data.LearningMode as LearningMode
+| eval Valid=case(Valid=="true" AND ( LearningMode="true" OR LearningMode="false"), "true", Valid=="false" AND LearningMode="true", "true (learning)", Valid=="false", "false", 1=1, "unknown")  
+| where $valid$
+| stats count by Valid</query>
+        <earliest>$field1.earliest$</earliest>
+        <latest>$field1.latest$</latest>
+      </search>
+      <valuePrefix>like('Valid',"</valuePrefix>
+      <delimiter> OR </delimiter>
+      <initialValue>%</initialValue>
+      <valueSuffix>")</valueSuffix>
+      <default>%</default>
+    </input>
+    <input type="multiselect" token="provider">
+      <label>Provider</label>
+      <choice value="%">All</choice>
+      <fieldForLabel>Provider</fieldForLabel>
+      <fieldForValue>Provider</fieldForValue>
+      <search>
+        <query>`kivera_proxy_search`
+| where $action$
+| where $action_type$ 
+| where $service$
+| where $proxyname$
+| rename data.Valid as Valid
+| rename data.LearningMode as LearningMode
+| eval Valid=case(Valid=="true" AND ( LearningMode="true" OR LearningMode="false"), "true", Valid=="false" AND LearningMode="true", "true (learning)", Valid=="false", "false", 1=1, "unknown")  
+| where $valid$
+| rename data.Provider as Provider
+| stats count by Provider</query>
+        <earliest>$field1.earliest$</earliest>
+        <latest>$field1.latest$</latest>
+      </search>
+      <valuePrefix>like('data.Provider',"</valuePrefix>
+      <delimiter> OR </delimiter>
+      <initialValue>%</initialValue>
+      <valueSuffix>")</valueSuffix>
+      <default>%</default>
+    </input>
+    <input type="multiselect" token="service">
+      <label>Service</label>
+      <choice value="%">All</choice>
+      <fieldForLabel>Service</fieldForLabel>
+      <fieldForValue>Service</fieldForValue>
+      <search>
+        <query>`kivera_proxy_search`
+| where $action$
+| where $action_type$ 
+| where $provider$
+| where $proxyname$
+| rename data.Valid as Valid
+| rename data.LearningMode as LearningMode
+| eval Valid=case(Valid=="true" AND ( LearningMode="true" OR LearningMode="false"), "true", Valid=="false" AND LearningMode="true", "true (learning)", Valid=="false", "false", 1=1, "unknown")  
+| where $valid$
+| rename data.Service as Service
+| stats count by Service</query>
+        <earliest>$field1.earliest$</earliest>
+        <latest>$field1.latest$</latest>
+      </search>
+      <valuePrefix>like('data.Service',"</valuePrefix>
+      <delimiter> OR </delimiter>
+      <valueSuffix>")</valueSuffix>
+      <default>%</default>
+      <initialValue>%</initialValue>
+    </input>
+    <input type="multiselect" token="action">
+      <label>Action</label>
+      <choice value="%">All</choice>
+      <fieldForLabel>Action</fieldForLabel>
+      <fieldForValue>Action</fieldForValue>
+      <search>
+        <query>`kivera_proxy_search`
+
+| where $action_type$ 
+| where $provider$
+| where $service$
+| where $proxyname$
+| rename data.Valid as Valid
+| rename data.LearningMode as LearningMode
+| eval Valid=case(Valid=="true" AND ( LearningMode="true" OR LearningMode="false"), "true", Valid=="false" AND LearningMode="true", "true (learning)", Valid=="false", "false", 1=1, "unknown")  
+| where $valid$
+| rename data.Action as Action
+| stats count by Action</query>
+        <earliest>$field1.earliest$</earliest>
+        <latest>$field1.latest$</latest>
+      </search>
+      <valuePrefix>like('data.Action',"</valuePrefix>
+      <delimiter> OR </delimiter>
+      <initialValue>%</initialValue>
+      <valueSuffix>")</valueSuffix>
+      <default>%</default>
+    </input>
+    <input type="multiselect" token="action_type">
+      <label>Action Type</label>
+      <choice value="%">All</choice>
+      <fieldForLabel>ActionType</fieldForLabel>
+      <fieldForValue>ActionType</fieldForValue>
+      <search>
+        <query>`kivera_proxy_search`
+| where $action$ 
+| where $provider$
+| where $service$
+| where $proxyname$
+| rename data.Valid as Valid
+| rename data.LearningMode as LearningMode
+| eval Valid=case(Valid=="true" AND ( LearningMode="true" OR LearningMode="false"), "true", Valid=="false" AND LearningMode="true", "true (learning)", Valid=="false", "false", 1=1, "unknown")  
+| where $valid$
+| rename data.ActionType as ActionType
+| stats count by ActionType</query>
+        <earliest>$field1.earliest$</earliest>
+        <latest>$field1.latest$</latest>
+      </search>
+      <valuePrefix>like('data.ActionType',"</valuePrefix>
+      <delimiter> OR </delimiter>
+      <initialValue>%</initialValue>
+      <valueSuffix>")</valueSuffix>
+      <default>%</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Proxy events</title>
+      <single>
+        <search>
+          <query>`kivera_proxy_search`
+| search msg="request"
+| where $action$ 
+| where $action_type$ 
+| where $provider$ 
+| where $service$ 
+| where $proxyname$
+| rename data.Valid as Valid
+| rename data.LearningMode as LearningMode
+| search "data.Headers.X-Kivera-Source{}"=Proxy 
+| eval Valid=case(Valid=="true" AND ( LearningMode="true" OR LearningMode="false"), "true", Valid=="false" AND LearningMode="true", "true (learning)", Valid=="false", "false", 1=1, "unknown")  
+| where $valid$
+| stats count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Allowed events</title>
+      <single>
+        <search>
+          <query>`kivera_proxy_search`
+| search msg="request"
+| where $action$ 
+| where $action_type$ 
+| where $provider$ 
+| where $service$ 
+| where $proxyname$
+| search msg="request" 
+| search "data.Headers.X-Kivera-Source{}"=Proxy 
+| where 'data.Valid'=="true" AND 'data.LearningMode'!="true"
+| rename data.Valid as Valid
+| rename data.LearningMode as LearningMode
+| eval Valid=case(Valid=="true" AND ( LearningMode="true" OR LearningMode="false"), "true", Valid=="false" AND LearningMode="true", "true (learning)", Valid=="false", "false", 1=1, "unknown")  
+| where $valid$
+| stats count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x53a051","0x53a051"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Learn mode events</title>
+      <single>
+        <search>
+          <query>`kivera_proxy_search`
+| search msg="request"
+| where $action$ 
+| where $action_type$ 
+| where $provider$ 
+| where $service$ 
+| where $proxyname$
+| search "data.Headers.X-Kivera-Source{}"=Proxy 
+| where 'data.LearningMode'="true"
+| rename data.Valid as Valid
+| rename data.LearningMode as LearningMode
+| eval Valid=case(Valid=="true" AND ( LearningMode="true" OR LearningMode="false"), "true", Valid=="false" AND LearningMode="true", "true (learning)", Valid=="false", "false", 1=1, "unknown")  
+| where $valid$
+| stats count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0xcba700","0xcba700"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Blocked events</title>
+      <single>
+        <search>
+          <query>`kivera_proxy_search`
+| search msg="request"
+| where $action$ 
+| where $action_type$ 
+| where $provider$ 
+| where $service$ 
+| where $proxyname$
+| search "data.Headers.X-Kivera-Source{}"=Proxy 
+| where 'data.Valid'=="false" AND 'data.LearningMode'!="true"
+| rename data.Valid as Valid
+| rename data.LearningMode as LearningMode
+| eval Valid=case(Valid=="true" AND ( LearningMode="true" OR LearningMode="false"), "true", Valid=="false" AND LearningMode="true", "true (learning)", Valid=="false", "false", 1=1, "unknown")  
+| where $valid$
+| stats count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0xdc4e41","0xdc4e41"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <input type="text" token="detail_text" searchWhenChanged="true">
+        <label>Text Search (use: .*  as wildcard)</label>
+        <default>.*</default>
+        <initialValue>.*</initialValue>
+      </input>
+      <table>
+        <title>Clicking on a row below will drill down to the 'xkid detail' dashboard for more detail on the xkid</title>
+        <search>
+          <done>
+            <set token="LearningMode">$result.LearningMode$</set>
+            <set token="Valid">$result.Valid$</set>
+          </done>
+          <query>`kivera_proxy_search`
+| search "data.Headers.X-Kivera-Source{}"=Proxy 
+| search msg="request"
+| eventstats dc(rules{}.RuleId) as RuleCount by _time xkid level msg 
+| where $action$ 
+| where $action_type$ 
+| where $provider$ 
+| where $service$ 
+| where $proxyname$
+| stats
+count as msg_count
+values(rules{}.RuleProcessResult) as rules{}.RuleProcessResult
+values(data.Provider) as data.Provider
+values(data.Service) as data.Service
+values(data.Action) as data.Action
+values(data.AppName) as data.AppName
+values(data.ProxyName) as data.ProxyName
+values(data.Region) as data.Region
+values(data.Valid) as data.Valid
+values(data.Method) as data.Method
+values(data.Host) as data.Host
+values(data.OrgName) as data.OrgName
+values(data.Parameters) as data.Parameters
+values(data.Path) as data.Path
+values(data.Proto) as data.Proto
+values(data.AppId) as data.AppId
+values(data.ProxyId) as data.ProxyId
+values(data.RemoteAddr) as data.RemoteAddr
+values(data.OrgId) as data.OrgId
+values(data.Qs) as data.Qs
+values(data.RawBody) as data.RawBody
+values(allowed) as allowed
+values(appId) as appId
+values(denied) as denied
+values(total) as total
+values(mem) as mem
+values(notified) as notified
+values(data.Referer) as data.Referer
+values(data.ReqMap) as data.ReqMap
+values(data.Headers.X-Kivera-Id{}) as data.Headers.X-Kivera-Id{}
+values(data.Headers.X-Kivera-Source{}) as data.Headers.X-Kivera-Source{}
+values(data.Profiles{}.ProfileName) as data.Profiles{}.ProfileName
+values(data.ProviderMetadata.AccessKeyId) as data.ProviderMetadata.AccessKeyId
+values(data.ProviderMetadata.Account) as data.ProviderMetadata.Account
+values(data.ProviderMetadata.EventCategory) as data.ProviderMetadata.EventCategory
+values(data.ProviderMetadata.EventID) as data.ProviderMetadata.EventID
+values(data.ProviderMetadata.EventType) as data.ProviderMetadata.EventType
+values(data.ProviderMetadata.ManagementEvent) as data.ProviderMetadata.ManagementEvent
+values(data.ProviderMetadata.PrincipalID) as data.ProviderMetadata.PrincipalID
+values(data.ProviderMetadata.ReadOnly) as data.ProviderMetadata.ReadOnly
+values(data.ProviderMetadata.RecipientAccountId) as data.ProviderMetadata.RecipientAccountId
+values(rules{}.Policies{}.Description) as rules{}.Policies{}.Description
+values(rules{}.Policies{}.Enforced) as rules{}.Policies{}.Enforced
+values(rules{}.Policies{}.ID) as rules{}.Policies{}.ID
+values(rules{}.Policies{}.PolicyProcessResult) as rules{}.Policies{}.PolicyProcessResult
+values(rules{}.Profiles{}) as rules{}.Profiles{}
+values(rules{}.RuleDescription) as rules{}.RuleDescription
+values(rules{}.RuleId) as rules{}.RuleId
+values(rules{}.RuleProvider) as rules{}.RuleProvider
+values(rules{}.RuleService) as rules{}.RuleService
+values(RuleCount) as RuleCount
+values(data.LearningMode) as LearningMode
+by _time timestamp xkid level msg
+| foreach * 
+    [ eval filter=if(filter=1 OR match('&lt;&lt;FIELD&gt;&gt;',"^.*(?i)$detail_text$.*$"),1,0)]
+| search filter=1 
+| fields - filter
+| rename 
+  data.Valid as Valid
+  data.Profiles{}.ProfileName as ProfileName
+  data.ProviderMetadata.AccessKeyId as AccessKeyId
+  data.ProviderMetadata.Account as Account
+  data.Provider as Provider
+  data.Service as Service
+  data.Action as Action
+  data.AppName as AppName
+  data.ProxyName as ProxyName
+  data.Region as Region
+  rules{}.RuleProcessResult as RuleProcessResult
+| eval Valid=case(Valid=="true" AND ( LearningMode="true" OR LearningMode="false"), "true", Valid=="false" AND LearningMode="true", "false (learning)", Valid=="false", "false", 1=1, "unknown")  
+| where $valid$
+| table 
+timestamp
+xkid
+Valid
+Provider
+Service
+Action
+ProxyName
+ProfileName
+RuleCount
+| sort - timestamp</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="count">50</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">false</option>
+        <format type="color" field="Service">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Action">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Outcome">
+          <colorPalette type="map">{"ALLOW":#277C52,"BLOCK":#D41F1F,"ALLOW (learning)":#CBA700}</colorPalette>
+        </format>
+        <format type="color" field="Valid">
+          <colorPalette type="map">{"false":#DC4E41,"true":#53A051,"false (learning)":#CBA700}</colorPalette>
+        </format>
+        <drilldown>
+          <link target="_blank">/app/kivera/xkid_detail?form.field1.earliest=$earliest$&amp;form.field1.latest=$latest$&amp;form.xkid=$row.xkid$</link>
+        </drilldown>
+      </table>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,51 @@
+<form version="1.1" theme="dark">
+  <label>AWS</label>
+  <fieldset submitButton="false">
+    <input type="time" token="field1">
+      <label></label>
+      <default>
+        <earliest>0</earliest>
+        <latest></latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>AWS Accounts</title>
+      <table>
+        <search>
+          <query>`kivera_proxy_search`
+| stats count by data.ProviderMetadata.Account
+| sort data.ProviderMetadata.Account
+| rename data.* as *</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>S3 buckets accessed</title>
+      <table>
+        <search>
+          <query>`kivera_proxy_search`
+| stats count by data.ProviderMetadata.Account data.ProviderMetadata.Region data.ReqMap.Bucket
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+      </table>
+    </panel>
+  </row>
+</form>

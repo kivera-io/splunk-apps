@@ -1,0 +1,7 @@
+<nav search_view="search">
+  <view name="overview" default='true' />
+  <view name="proxy_detail"/>
+  <view name="xkid_detail"/>
+  <view name="monitoring"/>
+  <view name="search" />
+</nav>

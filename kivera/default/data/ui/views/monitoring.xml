@@ -1,0 +1,350 @@
+<form version="1.1" theme="dark">
+  <label>Health</label>
+  <fieldset submitButton="false">
+    <input type="time" token="field1">
+      <label></label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="multiselect" token="msg">
+      <label>Message Type</label>
+      <choice value="&quot;*&quot;">All</choice>
+      <fieldForLabel>msg</fieldForLabel>
+      <fieldForValue>msg</fieldForValue>
+      <search>
+        <query>`kivera_proxy_search`
+| fillnull value=""
+| search $level$
+| stats count by msg</query>
+        <earliest>$field1.earliest$</earliest>
+        <latest>$field1.latest$</latest>
+      </search>
+      <valuePrefix>msg=</valuePrefix>
+      <delimiter> OR </delimiter>
+      <default>"""*"""</default>
+      <initialValue>"*"</initialValue>
+    </input>
+    <input type="multiselect" token="level">
+      <label>Log level</label>
+      <choice value="&quot;*&quot;">All</choice>
+      <fieldForLabel>level</fieldForLabel>
+      <fieldForValue>level</fieldForValue>
+      <search>
+        <query>`kivera_proxy_search`
+| fillnull value=""
+| search $msg$
+| stats count by level</query>
+        <earliest>$field1.earliest$</earliest>
+        <latest>$field1.latest$</latest>
+      </search>
+      <valuePrefix>level=</valuePrefix>
+      <delimiter> OR </delimiter>
+      <default>"""*"""</default>
+      <initialValue>"*"</initialValue>
+    </input>
+    <input type="dropdown" token="source">
+      <label>Source</label>
+      <choice value="*">All</choice>
+      <default>*</default>
+      <initialValue>*</initialValue>
+      <fieldForLabel>source</fieldForLabel>
+      <fieldForValue>source</fieldForValue>
+      <search>
+        <query>`kivera_proxy_search`
+| stats count by source</query>
+        <earliest>$field1.earliest$</earliest>
+        <latest>$field1.latest$</latest>
+      </search>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Logging - Total events</title>
+      <single>
+        <search>
+          <query>`kivera_proxy_search`
+| search source=$source$
+| stats count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Logging - Info events</title>
+      <single>
+        <search>
+          <query>`kivera_proxy_search`
+| search source=$source$
+| search level=info 
+| stats count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Logging - Debug events</title>
+      <single>
+        <search>
+          <query>`kivera_proxy_search`
+| search source=$source$
+| search level=debug 
+| stats count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Logging - Error events</title>
+      <single>
+        <search>
+          <query>`kivera_proxy_search`
+| search source=$source$
+| search level=error 
+| stats count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Logging - Total event count</title>
+      <chart>
+        <search>
+          <query>`kivera_proxy_search`
+| search source=$source$
+| search $level$
+| search $msg$
+| timechart count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.chart">area</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">364</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Total event count by log level</title>
+      <chart>
+        <search>
+          <query>`kivera_proxy_search`
+| search source=$source$
+| search $level$
+| search $msg$
+| timechart count by level</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">364</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Cache hit vs miss</title>
+      <chart>
+        <search>
+          <query>`kivera_proxy_search`
+| search source=$source$
+| where isnotnull(cache)
+| search $level$
+| search $msg$
+|  timechart count by cache</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.chart">area</option>
+        <option name="charting.drilldown">none</option>
+        <option name="height">362</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Proxy Versions</title>
+      <chart>
+        <search>
+          <query>`kivera_proxy_search`
+| search source=$source$
+|  search msg="request"
+| spath  path=data.Headers.X-Kivera-Source-Version{} output=X_Kivera_Source_Version 
+| timechart dc(data.ProxyName) as proxy_count by X_Kivera_Source_Version</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Instance Count</title>
+      <chart>
+        <search>
+          <query>`kivera_proxy_search`
+| search source=$source$
+| where isnotnull('data.ProxyName')
+| timechart dc(data.ProxyName) as instances by data.ProxyName</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.chart">area</option>
+        <option name="charting.chart.stackMode">stacked</option>
+        <option name="charting.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Events by level, msg</title>
+      <table>
+        <search>
+          <query>`kivera_proxy_search`
+| search source=$source$
+| search $level$
+| search $msg$
+| stats count by level, msg
+| rename extracted_host as host
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Valid">
+          <colorPalette type="map">{"true":#53A051,"false":#DC4E41}</colorPalette>
+        </format>
+        <format type="color" field="Service">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Action">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="RuleProcessResult">
+          <colorPalette type="map">{"BLOCK":#D41F1F,"ALLOW":#118832,"SKIP":#2EA39B}</colorPalette>
+        </format>
+        <format type="color" field="level">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="count">
+          <colorPalette type="minMidMax" maxColor="#1182F3" minColor="#3C444D"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+      </table>
+    </panel>
+    <panel>
+      <title>Non-cloud traffic by domain</title>
+      <table>
+        <search>
+          <query>`kivera_proxy_search`
+| search source=$source$
+| search $level$
+| search $msg$
+| search msg="allow_non_cloud_traffic" 
+| stats count by extracted_host
+| rename extracted_host as host
+| sort - count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+        <format type="color" field="count">
+          <colorPalette type="minMidMax" maxColor="#118832" minColor="#3C444D"></colorPalette>
+          <scale type="minMidMax"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Event detail</title>
+      <input type="text" token="detail_text" searchWhenChanged="true">
+        <label>Text Search (use: .*  as wildcard)</label>
+        <default>.*</default>
+        <initialValue>.*</initialValue>
+      </input>
+      <table>
+        <search>
+          <query>`kivera_proxy_search`
+| search source=$source$
+| search $level$
+| search $msg$
+| table timestamp index level msg _raw
+| foreach * 
+    [ eval filter=if(filter=1 OR match('&lt;&lt;FIELD&gt;&gt;',"^.*(?i)$detail_text$.*$"),1,0)]
+| search filter=1 
+| fields - filter
+| sort - timestamp</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="count">25</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="Valid">
+          <colorPalette type="map">{"true":#53A051,"false":#DC4E41}</colorPalette>
+        </format>
+        <format type="color" field="Service">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="Action">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="RuleProcessResult">
+          <colorPalette type="map">{"BLOCK":#D41F1F,"ALLOW":#118832,"SKIP":#2EA39B}</colorPalette>
+        </format>
+        <format type="color" field="level">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+        <format type="color" field="msg">
+          <colorPalette type="sharedList"></colorPalette>
+          <scale type="sharedCategory"></scale>
+        </format>
+      </table>
+    </panel>
+  </row>
+</form>
