@@ -305,7 +305,7 @@
 | search source=$source$
 | search $level$
 | search $msg$
-| table timestamp index level msg _raw
+| table timestamp source level msg _raw
 | foreach * 
     [ eval filter=if(filter=1 OR match('&lt;&lt;FIELD&gt;&gt;',"^.*(?i)$detail_text$.*$"),1,0)]
 | search filter=1 
